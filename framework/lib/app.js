@@ -17,7 +17,7 @@ module.exports = class Application extends NodebaseApplication {
   constructor(options) {
     super(options);
     this.app = new koa();
-    this.reploads = [];
+    this.preloads = [];
     this.callbackId = 0;
     this.callbacks = {};
     this.on('app:exit:child:notify', this.close.bind(this));
@@ -36,6 +36,14 @@ module.exports = class Application extends NodebaseApplication {
   async close() {
     await super.close();
     this.send('master', 'app:exit:child:done');
+  }
+
+  get FileLoader() {
+    return FileLoader;
+  }
+
+  get classBasic() {
+    return classBasic;
   }
 
   preload(cb) {
@@ -109,8 +117,8 @@ module.exports = class Application extends NodebaseApplication {
     this.loadServiceModules();
     this.loadMiddlewareModules();
     this.loadControllerModules();
-    for (let i = 0; i < this.reploads.length; i++) {
-      await this.reploads[i].call(this, FileLoader, classBasic);
+    for (let i = 0; i < this.preloads.length; i++) {
+      await this.preloads[i](this);
     }
     if (!this.router) {
       await Router(this, FileLoader, classBasic);

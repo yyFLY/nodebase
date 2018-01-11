@@ -22,6 +22,10 @@ module.exports = class Nodebase extends IPCMessage {
     return path.resolve(this.baseDir, ...args);
   }
 
+  get loadFile() {
+    return loadFile;
+  }
+
   checkLifeExit() {
     const timer = setInterval(() => {
       if (this.status === 2) {

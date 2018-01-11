@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { loadFile } = require('./index');
+const initCwd = process.cwd();
 
 module.exports = resolvePlugin;
 
@@ -40,8 +41,9 @@ function resolvePlugin(configs, env, agent, file) {
       modal = loadFile(pkgPath);
       exportsPath = path.resolve(pluginPathName, file);
     } else {
-      modal = loadFile(pluginPackageName + '/package.json');
-      exportsPath = path.resolve(pluginPackageName, file);
+      const dir = assertAndReturn(pluginPackageName, __dirname);
+      modal = loadFile(dir + '/package.json');
+      exportsPath = path.resolve(dir, file);
     }
 
     if (!modal.nodebasePlugin || modal.nodebasePlugin.name !== plugin) {
@@ -79,6 +81,23 @@ function sortDependencies(tree) {
     tree[i].name = i;
     m.push(tree[i]);
   }
-  
+  console.log(m)
   return m.sort((a, b) => a.deep - b.deep);
+}
+
+function assertAndReturn(frameworkName, moduleDir) {
+  const moduleDirs = new Set([
+    moduleDir,
+    // find framework from process.cwd, especially for test,
+    // the application is in test/fixtures/app,
+    // and framework is install in ${cwd}/node_modules
+    path.join(process.cwd(), 'node_modules'),
+    // prevent from mocking process.cwd
+    path.join(initCwd, 'node_modules'),
+  ]);
+  for (const moduleDir of moduleDirs) {
+    const frameworkPath = path.join(moduleDir, frameworkName);
+    if (fs.existsSync(frameworkPath)) return frameworkPath;
+  }
+  throw new Error(`${frameworkName} is not found in ${Array.from(moduleDirs)}`);
 }
