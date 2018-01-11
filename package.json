@@ -1,0 +1,27 @@
+{
+  "name": "@evio/nodebase",
+  "version": "1.0.0",
+  "description": "nodejs base dev framework",
+  "main": "cluster/index.js",
+  "scripts": {
+    "test": "node test/index.js",
+    "publish": "npm publish --access=public"
+  },
+  "dependencies": {
+    "async-events-listener": "^1.0.0",
+    "cfork": "^1.7.1",
+    "debug": "^3.1.0",
+    "detect-port": "^1.2.2",
+    "flatten": "^1.0.2",
+    "ipc-message": "^1.0.10",
+    "is-type-of": "^1.2.0",
+    "koa": "^2.4.1",
+    "koa-router": "^7.3.0",
+    "miox-compose": "^5.1.17",
+    "utility": "^1.13.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:cevio/node-base.git"
+  }
+}

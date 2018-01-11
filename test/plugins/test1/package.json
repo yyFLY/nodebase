@@ -1,0 +1,28 @@
+{
+  "name": "bifroster",
+  "version": "1.0.9",
+  "description": "nodejs base dev framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/index.js",
+    "a": "node test/a.js"
+  },
+  "dependencies": {
+    "async-events-listener": "^1.0.0",
+    "detect-port": "^1.2.2",
+    "ipc-message": "^1.0.7",
+    "utility": "^1.13.1"
+  },
+  "devDependencies": {
+    "axios": "^0.17.1",
+    "redis": "^2.8.0",
+    "socket.io-redis": "^5.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:cevio/bifrost.git"
+  },
+  "nodebasePlugin": {
+    "name": "test1"
+  }
+}
