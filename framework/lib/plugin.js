@@ -15,12 +15,16 @@ module.exports = class NodebasePluginFramework extends Emitter {
 
   resolvePlugins(file) {
     const plugin_path = this.parent.options.plugins;
+    const plugin_config_path = path.resolve(this.parent.options.configPath, `plugin.${this.parent.env}.js`);
     const cwd = this.parent.options.baseDir;
     const plugin_file = plugin_path ? path.resolve(cwd, plugin_path) : null;
 
     if (plugin_file && fs.existsSync(plugin_file)) {
       const pluginConfigs = loadFile(plugin_file);
-      this.stacks = resolvePluginOrder(pluginConfigs, process.env.NODE_ENV, this.parent.name, file);
+      this.stacks = resolvePluginOrder(pluginConfigs, this.parent.env, this.parent.name, file);
+      if (fs.existsSync(plugin_config_path)) {
+        this.pluginConfigs = loadFile(plugin_config_path);
+      }
     }
   }
 
@@ -28,13 +32,17 @@ module.exports = class NodebasePluginFramework extends Emitter {
     this.resolvePlugins(file);
     for (let i = 0; i < this.stacks.length; i++) {
       const stack = this.stacks[i];
+      const config = this.pluginConfigs && this.pluginConfigs[stack.name] 
+        ? this.pluginConfigs[stack.name] 
+        : null;
+        
       if (this.component) {
-        const target = new this.component(this);
+        const target = new this.component(this, config);
         await stack.exports(target);
         target.poly();
         this.stacks[i] = this.channels[stack.name] = target;
       } else {
-        await stack.exports(this.parent);
+        await stack.exports(this.parent, config);
       }
     }
   }

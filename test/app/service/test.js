@@ -10,6 +10,6 @@ module.exports = class Test extends Application.Service {
       a:1,
       b:2
     });
-    return 'Hello Nodebase Classic: ' + data.m + ' ' + data.n + '!';
+    return 'Hello Nodebase Classic: ' + data.m + ' ' + data.n + '(' + (data.a + data.b) + ')!';
   }
 }

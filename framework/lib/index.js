@@ -10,6 +10,7 @@ module.exports = class Nodebase extends IPCMessage {
     super(isAgent);
     this.options = options;
     this.baseDir = options.baseDir;
+    this.env = process.env.NODE_ENV;
     this.status = 0;
     this.console = new Logger(this);
     this.logger = console;

@@ -1,12 +1,14 @@
+const fs = require('fs');
 const path = require('path');
 const cfork = require('cfork');
+const assert = require('assert');
 const cluster = require('cluster');
 const detectPort = require('detect-port');
 const IPCMessage = require('ipc-message');
 const childprocess = require('child_process');
 const debug = require('debug')('nodebase:cluster:master');
 const parseOptions = require('../utils/options');
-const { costTime } = require('../utils');
+const { costTime, loadFile } = require('../utils');
 const Logger = require('../utils/logger');
 
 const toString = Object.prototype.toString;
@@ -29,7 +31,7 @@ const agentLifeCycle = [
 ];
 
 module.exports = class Master extends IPCMessage {
-  constructor(options) {
+  constructor(config) {
     super();
     /**
      * Master进程状态
@@ -41,6 +43,13 @@ module.exports = class Master extends IPCMessage {
      * 3: 正在关闭Master进程
      */
     this.status = 0;
+    this.env = process.env.NODE_ENV || 'production';
+
+    const optionsPath = path.resolve(config, `options.${this.env}.js`);
+    assert(fs.existsSync(optionsPath), `options.${this.env}.js should exist.`);
+    const options = loadFile(optionsPath);
+    options.configPath = config;
+
     this.options = parseOptions(options);
     this.console = new Logger(this);
     this.logger = console;

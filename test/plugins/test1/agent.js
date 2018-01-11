@@ -12,10 +12,10 @@ module.exports = component => {
 
   component.use(async (ctx, next) => {
     if (ctx.url === '/a/b/c') {
-      ctx.reply({
+      ctx.reply(Object.assign({
         m: 'hello',
         n: 'world'
-      });
+      }, component.config));
     }
   });
 }

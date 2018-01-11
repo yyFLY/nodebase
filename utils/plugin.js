@@ -52,8 +52,7 @@ function resolvePlugin(configs, env, agent, file) {
     if (fs.existsSync(exportsPath)) {
       tree[plugin] = {
         dependencies: modal.nodebasePlugin.dependencies || [],
-        exports: loadFile(exportsPath),
-        config: config.config
+        exports: loadFile(exportsPath)
       }
     }
   }
