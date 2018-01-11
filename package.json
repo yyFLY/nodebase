@@ -1,11 +1,11 @@
 {
   "name": "@evio/nodebase",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "nodejs base dev framework",
   "main": "cluster/index.js",
   "scripts": {
     "test": "node test/index.js",
-    "publish": "npm publish --access=public"
+    "post": "npm publish --access=public"
   },
   "dependencies": {
     "async-events-listener": "^1.0.0",
