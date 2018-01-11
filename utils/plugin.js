@@ -81,7 +81,6 @@ function sortDependencies(tree) {
     tree[i].name = i;
     m.push(tree[i]);
   }
-  console.log(m)
   return m.sort((a, b) => a.deep - b.deep);
 }
 
