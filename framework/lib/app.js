@@ -10,7 +10,6 @@ const is = require('is-type-of');
 const ServiceClassBasic = require('../basic/service');
 const ControllerClassBasic = require('../basic/controller');
 const MiddlewareClassBasic = require('../basic/middleware');
-const classBasic = require('../basic/basic');
 const Router = require('./router');
 
 module.exports = class Application extends NodebaseApplication {
@@ -36,14 +35,6 @@ module.exports = class Application extends NodebaseApplication {
   async close() {
     await super.close();
     this.send('master', 'app:exit:child:done');
-  }
-
-  get FileLoader() {
-    return FileLoader;
-  }
-
-  get classBasic() {
-    return classBasic;
   }
 
   preload(cb) {
