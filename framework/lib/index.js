@@ -2,8 +2,9 @@ const fs = require('fs');
 const path = require('path')
 const IPCMessage = require('ipc-message');
 const PluginFramework = require('./plugin');
-const { loadFile } = require('../../utils');
+const utils = require('../../utils');
 const Logger = require('../../utils/logger');
+const { loadFile } = utils;
 
 module.exports = class Nodebase extends IPCMessage {
   constructor(options, isAgent) {
@@ -24,6 +25,10 @@ module.exports = class Nodebase extends IPCMessage {
 
   get loadFile() {
     return loadFile;
+  }
+
+  get utils() {
+    return utils;
   }
 
   checkLifeExit() {
