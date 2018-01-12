@@ -5,7 +5,7 @@ const PluginFramework = require('./plugin');
 const utils = require('../../utils');
 const Logger = require('../../utils/logger');
 const { loadFile } = utils;
-const Nodebase = require('../index');
+const NodeBase = require('../index');
 
 module.exports = class Nodebase extends IPCMessage {
   constructor(options, isAgent) {
@@ -25,7 +25,7 @@ module.exports = class Nodebase extends IPCMessage {
   }
 
   get nodebase() {
-    return Nodebase;
+    return NodeBase;
   }
 
   get utils() {
