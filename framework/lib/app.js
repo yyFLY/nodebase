@@ -10,6 +10,7 @@ const is = require('is-type-of');
 const ServiceClassBasic = require('../basic/service');
 const ControllerClassBasic = require('../basic/controller');
 const MiddlewareClassBasic = require('../basic/middleware');
+const classBasic = require('../basic/basic');
 const Router = require('./router');
 
 module.exports = class Application extends NodebaseApplication {
@@ -112,7 +113,7 @@ module.exports = class Application extends NodebaseApplication {
       await this.preloads[i](this);
     }
     if (!this.router) {
-      await Router(this, FileLoader, classBasic);
+      await Router(this);
     }
     assert(this.router, 'Application.router is undefined, please make sure router is loaded');
     this.app.use(...this.router.convert());
