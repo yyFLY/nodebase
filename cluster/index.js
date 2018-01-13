@@ -5,12 +5,11 @@ const path = require('path');
 const cfork = require('cfork');
 const assert = require('assert');
 const cluster = require('cluster');
-const detectPort = require('detect-port');
 const IPCMessage = require('ipc-message');
 const childprocess = require('child_process');
 const debug = require('debug')('nodebase:cluster:master');
 const parseOptions = require('../utils/options');
-const { costTime, loadFile } = require('../utils');
+const { costTime, loadFile, checkPortCanUse } = require('../utils');
 const Logger = require('../utils/logger');
 
 const toString = Object.prototype.toString;
@@ -56,25 +55,18 @@ module.exports = class Master extends IPCMessage {
     this.console = new Logger(this);
     this.logger = console;
     this.on('message', this.onReceiveMessageHandler.bind(this));
-    
-    detectPort((err, port) => {
-      if (err) {
-        err.name = 'ClusterPortConflictError';
-        err.message = '[master] try get free port error, ' + err.message;
-        // TODO: this.logger.error(err);
-        debug('detectPort catch error', err);
-        process.exit(1);
-      }
-      this.options.clusterPort = port;
-      this.startSocketService();
-      this.forkAgentWorker();
-    });
-
-    // 监听各个生命周期花费时间
     agentLifeCycle.forEach(life => this.on(life, costTime(life)));
-
     this.onLifeCycleBinding();
     this.onExitEventBinding();
+    this.installize();
+  }
+
+  async installize() {
+    await checkPortCanUse(this.console, this.options.port);
+    const port = await checkPortCanUse(this.console);
+    this.options.clusterPort = port;
+    this.startSocketService();
+    this.forkAgentWorker();
   }
 
   startSocketService() {

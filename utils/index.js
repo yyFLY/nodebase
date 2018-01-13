@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const detectPort = require('detect-port');
 const debug = require('debug')('nodebase:utils:custom');
 let startTime = Date.now();
 
@@ -7,6 +8,30 @@ exports.loadFile = loadFile;
 exports.costTime = costTime;
 exports.camelize = camelize;
 exports.objectProxy = objectProxy;
+exports.checkPortCanUse = checkPortCanUse;
+
+function checkPortCanUse(logger, port) {
+  return new Promise((resolve, reject) => {
+    const args = [];
+    if (port) {
+      args.push(port);
+    }
+    args.push((err, port) => {
+      if (err) {
+        err.name = 'ClusterPortConflictError';
+        err.message = '[master] try get free port error, ' + err.message;
+        // TODO: this.logger.error(err);
+        if (logger) {
+          logger.error(err);
+        }
+        reject(err);
+        process.exit(1);
+      }
+      resolve(port);
+    });
+    detectPort(...args);
+  });
+}
 
 function loadFile(filepath) {
   try {
