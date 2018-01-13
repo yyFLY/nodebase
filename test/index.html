@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <script src="https://cdn.bootcss.com/socket.io/2.0.4/socket.io.js"></script>
+  <title>Document</title>
+</head>
+<body>
+  <div id="app" style="font-family:Arial, Helvetica, sans-serif; font-size:20px; padding:50px; color:blueviolet; text-align:center;">connecting...</div>
+  <script>
+    const socket = io();
+    socket.on('b', data => {
+      document.getElementById('app').innerHTML = `Receive data:[${data}] from socket:${socket.id}.`;
+    });
+    socket.on('connect', () => {
+      socket.emit('a', 198);
+    });
+  </script>
+</body>
+</html>

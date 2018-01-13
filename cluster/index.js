@@ -1,4 +1,6 @@
 const fs = require('fs');
+const ip = require('ip');
+const net = require('net');
 const path = require('path');
 const cfork = require('cfork');
 const assert = require('assert');
@@ -55,7 +57,7 @@ module.exports = class Master extends IPCMessage {
     this.logger = console;
     this.on('message', this.onReceiveMessageHandler.bind(this));
     
-    detectPort(this.options.port, (err, port) => {
+    detectPort((err, port) => {
       if (err) {
         err.name = 'ClusterPortConflictError';
         err.message = '[master] try get free port error, ' + err.message;
@@ -64,6 +66,7 @@ module.exports = class Master extends IPCMessage {
         process.exit(1);
       }
       this.options.clusterPort = port;
+      this.startSocketService();
       this.forkAgentWorker();
     });
 
@@ -72,6 +75,47 @@ module.exports = class Master extends IPCMessage {
 
     this.onLifeCycleBinding();
     this.onExitEventBinding();
+  }
+
+  startSocketService() {
+    if (this.options.socket) {
+      net.createServer({
+        pauseOnConnect: true
+      }, this.socketServiceBalance.bind(this))
+      .listen(this.options.port);
+    }
+  }
+
+  socketServiceBalance(socket) {
+    if (!socket.remoteAddress) {
+      return socket.close();
+    }
+    var addr = ip.toBuffer(socket.remoteAddress || '127.0.0.1');
+    var hash = this.socketServiceHash(addr);
+
+    debug('balacing connection %j', addr);
+    this.workers[hash % this.workers.length].send('sticky:balance', socket);
+  }
+
+  socketServiceHash(ip) {
+    var hash = this.seed;
+    for (var i = 0; i < ip.length; i++) {
+      var num = ip[i];
+
+      hash += num;
+      hash %= 2147483648;
+      hash += (hash << 10);
+      hash %= 2147483648;
+      hash ^= hash >> 6;
+    }
+
+    hash += hash << 3;
+    hash %= 2147483648;
+    hash ^= hash >> 11;
+    hash += hash << 15;
+    hash %= 2147483648;
+
+    return hash >>> 0;
   }
 
   async onReceiveMessageHandler(message) {

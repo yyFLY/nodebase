@@ -6,6 +6,7 @@ const utils = require('../../utils');
 const Logger = require('../../utils/logger');
 const { loadFile } = utils;
 const NodeBase = require('../index');
+const debug = require('debug')('nodebase:worker:custom:constructor');
 
 module.exports = class Nodebase extends IPCMessage {
   constructor(options, isAgent) {
@@ -85,6 +86,15 @@ module.exports = class Nodebase extends IPCMessage {
     this.status = 1;
     await this.emit('beforeDestroy');
     await this.plugin.uninstallPlugins();
+    await this.emit('beforeServerClose');
+    if (this.io) {
+      this.io.close();
+      debug('web socket is closed');
+    }
+    if (this.server) {
+      this.server.close();
+      debug('server is closed');
+    }
     await this.emit('destroyed');
   }
 }

@@ -12,6 +12,7 @@ const ControllerClassBasic = require('../basic/controller');
 const MiddlewareClassBasic = require('../basic/middleware');
 const classBasic = require('../basic/basic');
 const Router = require('./router');
+const io = require('socket.io');
 
 module.exports = class Application extends NodebaseApplication {
   constructor(options) {
@@ -26,6 +27,17 @@ module.exports = class Application extends NodebaseApplication {
         clearInterval(this.__agentkeepAliveTimer__);
         this.status = 2;
       }
+    });
+    this.on('sticky:balance', socket => {
+      this.server.emit('connection', socket);
+      socket.resume();
+    });
+    this.on('app:socket:connected', this.onSocketConnected.bind(this));
+  }
+
+  async onSocketConnected(socket) {
+    socket.on('a', a => {
+      socket.emit('b', a + 2);
     });
   }
 
@@ -123,8 +135,9 @@ module.exports = class Application extends NodebaseApplication {
   async createServer(callback) {
     await this.emit('app:beforeServerStart');
     const netWork = this.options.https ? https : http;
-    const port = this.options.port || 8080;
+    const _port = this.options.port || 8080;
     const options = [];
+    const port = this.options.socket ? this.options.clusterPort : _port;
     if (this.options.secure) {
       options.push({
         key: this.options.key, 
@@ -135,6 +148,13 @@ module.exports = class Application extends NodebaseApplication {
     }
     await new Promise((resolve, reject) => {
       this.server = netWork.createServer(...options);
+      if (this.options.socket) {
+        this.io = io(this.server);
+        this.emit('app:socket:created', this.io);
+        this.io.on('connect', socket => {
+          this.emit('app:socket:connected', socket);
+        });
+      }
       this.server.listen(port, err => {
         if (err) return reject(err);
         const httpname = this.options.https ? 'https' : 'http';
