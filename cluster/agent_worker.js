@@ -17,7 +17,7 @@ const agent = new Agent(options);
   'beforeDestroy',
   'destroyed'
 ].forEach(life => {
-  agent.on(life, () => 
+  agent.on(life, () =>
     agent.send('master', `agent:${life}`, {
       time: Date.now(),
       pid: agent.pid

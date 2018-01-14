@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
-const { loadFile } = require('./index');
+const {
+  loadFile
+} = require('./index');
 const initCwd = process.cwd();
 
 module.exports = resolvePlugin;
@@ -16,8 +18,7 @@ function resolvePlugin(configs, env, agent, file) {
     if (!config.agent || config.agent === '*') config.agent = [];
     if (!Array.isArray(config.agent)) config.agent = [config.agent];
 
-    const next = 
-      !config.enable || 
+    const next = !config.enable ||
       (config.env.length && config.env.indexOf(env) === -1) ||
       (config.agent.length && config.agent.indexOf(agent) === -1);
     if (next) continue;

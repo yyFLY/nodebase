@@ -10,7 +10,13 @@ const childprocess = require('child_process');
 const debug = require('debug')('nodebase:cluster:master');
 const parseOptions = require('../utils/options');
 const Logger = require('../utils/logger');
-const { costTime, loadFile, checkPortCanUse, agentLifeCycle } = require('../utils');
+const {
+  costTime,
+  loadFile,
+  checkPortCanUse,
+  agentLifeCycle,
+  socketServiceHash
+} = require('../utils');
 
 const toString = Object.prototype.toString;
 const agentWorkerFile = path.resolve(__dirname, './agent_worker.js');
@@ -29,6 +35,7 @@ module.exports = class Master extends IPCMessage {
      * 3: 正在关闭Master进程
      */
     this.status = 0;
+    this.seed = (Math.random() * 0xffffffff) | 0;
     this.env = process.env.NODE_ENV || 'production';
 
     const optionsPath = path.resolve(config, `options.${this.env}.js`);
@@ -59,9 +66,9 @@ module.exports = class Master extends IPCMessage {
   startSocketService() {
     if (this.options.socket) {
       net.createServer({
-        pauseOnConnect: true
-      }, this.socketServiceBalance.bind(this))
-      .listen(this.options.port);
+          pauseOnConnect: true
+        }, this.socketServiceBalance.bind(this))
+        .listen(this.options.port);
     }
   }
 
@@ -70,31 +77,14 @@ module.exports = class Master extends IPCMessage {
       return socket.close();
     }
     var addr = ip.toBuffer(socket.remoteAddress || '127.0.0.1');
-    var hash = this.socketServiceHash(addr);
+    var hash = socketServiceHash(addr);
 
     debug('balacing connection %j', addr);
-    this.workers[hash % this.workers.length].send('sticky:balance', socket);
-  }
-
-  socketServiceHash(ip) {
-    var hash = this.seed;
-    for (var i = 0; i < ip.length; i++) {
-      var num = ip[i];
-
-      hash += num;
-      hash %= 2147483648;
-      hash += (hash << 10);
-      hash %= 2147483648;
-      hash ^= hash >> 6;
+    const worker = this.workers[hash % this.workers.length];
+    if (!worker) {
+      return this.console.warn('socket worker is not exist');
     }
-
-    hash += hash << 3;
-    hash %= 2147483648;
-    hash ^= hash >> 11;
-    hash += hash << 15;
-    hash %= 2147483648;
-
-    return hash >>> 0;
+    worker.send('sticky:balance', socket);
   }
 
   async onReceiveMessageHandler(message) {
@@ -149,7 +139,7 @@ module.exports = class Master extends IPCMessage {
       const args = argvs.concat([JSON.stringify(this.options)]);
       args.push(this.options.agents[i].name, this.options.agents[i].path);
       this.registAgent(
-        this.options.agents[i].name, 
+        this.options.agents[i].name,
         childprocess.fork(agentWorkerFile, args, opt)
       );
     }
@@ -201,7 +191,7 @@ module.exports = class Master extends IPCMessage {
         this.send('agents', 'agent:exit:child:notify');
         this.emit('app:exit');
       }
-      
+
       if (this.status === 3) {
         if (this._agents.filter(a => !!a.connected).length) return;
         clearInterval(timer);
@@ -209,7 +199,7 @@ module.exports = class Master extends IPCMessage {
         process.exit(0);
       }
     }, 100);
-    
+
     if (this.status === 0) {
       this.send('workers', 'app:exit:child:notify');
       this.status = 1;

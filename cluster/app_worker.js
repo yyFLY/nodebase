@@ -14,7 +14,7 @@ const app = new Application(options);
   'beforeDestroy',
   'destroyed'
 ].forEach(life => {
-  app.on(life, () => 
+  app.on(life, () =>
     app.send('master', `app:${life}`, {
       time: Date.now(),
       pid: app.pid

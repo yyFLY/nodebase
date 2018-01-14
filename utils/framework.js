@@ -8,7 +8,9 @@ const utility = require('utility');
 const initCwd = process.cwd();
 const defaultFramework = path.resolve(__dirname, '../framework');
 
-module.exports = { getFrameworkPath };
+module.exports = {
+  getFrameworkPath
+};
 
 /**
  * Find the framework directory, lookup order
@@ -20,7 +22,10 @@ module.exports = { getFrameworkPath };
  * @param  {String} [options.framework] - the directory of framework
  * @return {String} frameworkPath
  */
-function getFrameworkPath({ framework, baseDir }) {
+function getFrameworkPath({
+  framework,
+  baseDir
+}) {
   const pkgPath = path.join(baseDir, 'package.json');
   assert(fs.existsSync(pkgPath), `${pkgPath} should exist`);
 

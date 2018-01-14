@@ -1,12 +1,14 @@
 const fs = require('fs');
 const path = require('path');
 const Router = require('koa-router');
-const { loadFile } = require('../../utils');
+const {
+  loadFile
+} = require('../../utils');
 
-module.exports = function(app) {
+module.exports = function (app) {
   app.router = loadRoutesModules(app.resolve('app/router'), app);
   if (app.router) {
-    app.router.convert = function() {
+    app.router.convert = function () {
       return [app.router.routes(), app.router.allowedMethods()];
     }
   }
@@ -23,7 +25,7 @@ function loadRoutesModules(dir, inject) {
     } = collectDirs(dir);
 
     const indexRouter = files['index.js'];
-  
+
     if (indexRouter) {
       const router = parse(inject, indexRouter);
 
@@ -32,7 +34,7 @@ function loadRoutesModules(dir, inject) {
         const _router = parse(inject, files[i]);
         router.use('/' + replacePrefix(i), _router.routes(), _router.allowedMethods());
       }
-  
+
       for (const j in dirs) {
         load(dirs[j], j, router);
       }

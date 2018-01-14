@@ -3,7 +3,10 @@ const http = require('http');
 const https = require('https');
 const assert = require('assert');
 const NodebaseApplication = require('./index');
-const { loadFile, objectProxy } = require('../../utils');
+const {
+  loadFile,
+  objectProxy
+} = require('../../utils');
 const debug = require('debug')('nodebase:application:worker');
 const FileLoader = require('./loader');
 const is = require('is-type-of');
@@ -70,7 +73,7 @@ module.exports = class Application extends NodebaseApplication {
     if (!this.options.service) this.options.service = 'app/service';
     this.options.service = this.resolve(this.options.service);
     this.loadModules(
-      this.options.service, 
+      this.options.service,
       'Service',
       ServiceClassBasic,
       this
@@ -81,7 +84,7 @@ module.exports = class Application extends NodebaseApplication {
     if (!this.options.middleware) this.options.middleware = 'app/middleware';
     this.options.middleware = this.resolve(this.options.middleware);
     this.loadModules(
-      this.options.middleware, 
+      this.options.middleware,
       'Middleware',
       MiddlewareClassBasic,
       this
@@ -92,7 +95,7 @@ module.exports = class Application extends NodebaseApplication {
     if (!this.options.controller) this.options.controller = 'app/controller';
     this.options.controller = this.resolve(this.options.controller);
     this.loadModules(
-      this.options.controller, 
+      this.options.controller,
       'Controller',
       ControllerClassBasic,
       this
@@ -122,7 +125,7 @@ module.exports = class Application extends NodebaseApplication {
     const port = this.options.socket ? this.options.clusterPort : _port;
     if (this.options.secure) {
       options.push({
-        key: this.options.key, 
+        key: this.options.key,
         cert: this.options.cert
       }, callback);
     } else {

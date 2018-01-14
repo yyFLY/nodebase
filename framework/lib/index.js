@@ -4,7 +4,9 @@ const IPCMessage = require('ipc-message');
 const PluginFramework = require('./plugin');
 const utils = require('../../utils');
 const Logger = require('../../utils/logger');
-const { loadFile } = utils;
+const {
+  loadFile
+} = utils;
 const NodeBase = require('../index');
 const debug = require('debug')('nodebase:worker:custom:constructor');
 
@@ -18,7 +20,7 @@ module.exports = class Nodebase extends IPCMessage {
     this.console = new Logger(this);
     this.logger = console;
     this.on('error', err => this.console.error(err));
-    this.on('message', async (msg, socket) => await this.onReceiveMessageHandler(msg, socket));
+    this.on('message', async(msg, socket) => await this.onReceiveMessageHandler(msg, socket));
   }
 
   resolve(...args) {
@@ -98,4 +100,3 @@ module.exports = class Nodebase extends IPCMessage {
     await this.emit('destroyed');
   }
 }
-

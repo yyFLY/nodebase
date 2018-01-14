@@ -1,7 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
-const { loadFile, camelize } = require('../../utils');
+const {
+  loadFile,
+  camelize
+} = require('../../utils');
 
 module.exports = class NodebaseLoader {
   constructor(options) {

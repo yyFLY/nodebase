@@ -2,7 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const Emitter = require('async-events-listener');
 const resolvePluginOrder = require('../../utils/plugin');
-const { loadFile } = require('../../utils');
+const {
+  loadFile
+} = require('../../utils');
 
 module.exports = class NodebasePluginFramework extends Emitter {
   constructor(parent, component) {
@@ -32,10 +34,10 @@ module.exports = class NodebasePluginFramework extends Emitter {
     this.resolvePlugins(file);
     for (let i = 0; i < this.stacks.length; i++) {
       const stack = this.stacks[i];
-      const config = this.pluginConfigs && this.pluginConfigs[stack.name] 
-        ? this.pluginConfigs[stack.name] 
-        : null;
-        
+      const config = this.pluginConfigs && this.pluginConfigs[stack.name] ?
+        this.pluginConfigs[stack.name] :
+        null;
+
       if (this.component) {
         const target = new this.component(this, config);
         await stack.exports(target);

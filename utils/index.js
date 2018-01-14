@@ -8,6 +8,7 @@ exports.loadFile = loadFile;
 exports.costTime = costTime;
 exports.camelize = camelize;
 exports.objectProxy = objectProxy;
+exports.socketServiceHash = socketServiceHash;
 exports.checkPortCanUse = checkPortCanUse;
 
 exports.agentLifeCycle = [
@@ -24,6 +25,27 @@ exports.agentLifeCycle = [
   'app:beforeDestroy',
   'app:destroyed'
 ];
+
+function socketServiceHash(ip) {
+  var hash = this.seed;
+  for (var i = 0; i < ip.length; i++) {
+    var num = ip[i];
+
+    hash += num;
+    hash %= 2147483648;
+    hash += (hash << 10);
+    hash %= 2147483648;
+    hash ^= hash >> 6;
+  }
+
+  hash += hash << 3;
+  hash %= 2147483648;
+  hash ^= hash >> 11;
+  hash += hash << 15;
+  hash %= 2147483648;
+
+  return hash >>> 0;
+}
 
 function checkPortCanUse(logger, port) {
   return new Promise((resolve, reject) => {
@@ -52,7 +74,7 @@ function loadFile(filepath) {
   try {
     // if not js module, just return content buffer
     const extname = path.extname(filepath);
-    if (![ '.js', '.node', '.json', '' ].includes(extname)) {
+    if (!['.js', '.node', '.json', ''].includes(extname)) {
       return fs.readFileSync(filepath);
     }
     // require js module
@@ -94,14 +116,14 @@ function objectProxy(object, name) {
     get(obj, key) {
       if (key in obj) {
         const parentData = obj[key];
-        return typeof parentData === 'function'
-          ? parentData.bind(obj)
-          : parentData;
+        return typeof parentData === 'function' ?
+          parentData.bind(obj) :
+          parentData;
       } else {
         const childData = obj[name][key];
-        return typeof childData === 'function'
-          ? childData.bind(obj[name])
-          : childData;
+        return typeof childData === 'function' ?
+          childData.bind(obj[name]) :
+          childData;
       }
     }
   })

@@ -2,9 +2,11 @@ const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
-const { getFrameworkPath } = require('./framework');
+const {
+  getFrameworkPath
+} = require('./framework');
 
-module.exports = function(options) {
+module.exports = function (options) {
   const defaults = {
     framework: '',
     baseDir: process.cwd(),
@@ -36,10 +38,16 @@ module.exports = function(options) {
   assert(nodebase.Application, `should define Application in ${options.framework}`);
   assert(nodebase.Agent, `should define Agent in ${options.framework}`);
 
-  if (!options.agents) options.agents = [{ name: 'agent', path: resolve(options.baseDir, 'agent.js') }];
+  if (!options.agents) options.agents = [{
+    name: 'agent',
+    path: resolve(options.baseDir, 'agent.js')
+  }];
   if (!Array.isArray(options.agents)) {
     if (typeof options.agents === 'string') {
-      options.agents = [{ name: options.agents, path: resolve(options.baseDir, options.agents + '.js') }];
+      options.agents = [{
+        name: options.agents,
+        path: resolve(options.baseDir, options.agents + '.js')
+      }];
     } else if (typeof options.agents === 'object') {
       options.agents = [];
       for (const i in options.agents) {
@@ -60,17 +68,17 @@ module.exports = function(options) {
     }
 
     if (
-      typeof agent === 'object' && 
-      agent.name && 
-      agent.path && 
+      typeof agent === 'object' &&
+      agent.name &&
+      agent.path &&
       path.isAbsolute(agent.path)
     ) return agent;
-    
+
     return null;
   }).filter(agent => agent !== null);
 
   options.agents.forEach(agent => assert(
-    fs.existsSync(agent.path), 
+    fs.existsSync(agent.path),
     `agent[${agent.name}]: ${agent.path} should exists`
   ));
 
