@@ -4,7 +4,7 @@
   "description": "nodejs base dev framework",
   "main": "cluster/index.js",
   "scripts": {
-    "test": "NODE_ENV=dev node test/index.js",
+    "test": "NODE_ENV=dev DEBUG=nodebase:socket node test/index.js",
     "post": "npm publish --access=public"
   },
   "dependencies": {

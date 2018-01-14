@@ -12,7 +12,7 @@ const ControllerClassBasic = require('../basic/controller');
 const MiddlewareClassBasic = require('../basic/middleware');
 const classBasic = require('../basic/basic');
 const Router = require('./router');
-const io = require('socket.io');
+const SocketIO = require('./socket');
 
 module.exports = class Application extends NodebaseApplication {
   constructor(options) {
@@ -32,13 +32,6 @@ module.exports = class Application extends NodebaseApplication {
       this.server.emit('connection', socket);
       socket.resume();
     });
-    this.on('app:socket:connected', this.onSocketConnected.bind(this));
-  }
-
-  async onSocketConnected(socket) {
-    socket.on('a', a => {
-      socket.emit('b', a + 2);
-    });
   }
 
   async init() {
@@ -54,67 +47,56 @@ module.exports = class Application extends NodebaseApplication {
     this.preloads.push(cb);
   }
 
-  loadServiceModules() {
-    if (!this.options.service) this.options.service = 'app/service';
-    this.options.service = this.resolve(this.options.service);
+  loadModules(dir, type, classic, target) {
     const loader = new FileLoader({
-      dir: this.options.service,
+      dir,
       ignore: []
     });
     loader.installize((target, name, exports, file, fullpath) => {
       if (is.class(exports)) {
         const obj = new exports(this);
-        assert(obj.type === 'service', `Class file: ${fullpath} should extends from Application.Service`);
+        assert(obj.type === type.toLowerCase(), `Class file: ${fullpath} should extends from Application.${type}`);
         return objectProxy(obj, 'base');
       } else if (is.function(exports)) {
-        const object = new ServiceClassBasic(this);
+        const object = new classic(this);
         exports(object);
         return objectProxy(object, 'base');
       }
     });
-    this.service = loader.load();
+    target[type.toLowerCase()] = loader.load();
+  }
+
+  loadServiceModules() {
+    if (!this.options.service) this.options.service = 'app/service';
+    this.options.service = this.resolve(this.options.service);
+    this.loadModules(
+      this.options.service, 
+      'Service',
+      ServiceClassBasic,
+      this
+    );
   }
 
   loadMiddlewareModules() {
     if (!this.options.middleware) this.options.middleware = 'app/middleware';
     this.options.middleware = this.resolve(this.options.middleware);
-    const loader = new FileLoader({
-      dir: this.options.middleware,
-      ignore: []
-    });
-    loader.installize((target, name, exports, file, fullpath) => {
-      if (is.class(exports)) {
-        const obj = new exports(this);
-        assert(obj.type === 'middleware', `Class file: ${fullpath} should extends from Application.Middleware`);
-        return objectProxy(obj, 'base');
-      } else if (is.function(exports)) {
-        const object = new MiddlewareClassBasic(this);
-        exports(object);
-        return objectProxy(object, 'base');
-      }
-    });
-    this.middleware = loader.load();
+    this.loadModules(
+      this.options.middleware, 
+      'Middleware',
+      MiddlewareClassBasic,
+      this
+    );
   }
 
   loadControllerModules() {
     if (!this.options.controller) this.options.controller = 'app/controller';
     this.options.controller = this.resolve(this.options.controller);
-    const loader = new FileLoader({
-      dir: this.options.controller,
-      ignore: []
-    });
-    loader.installize((target, name, exports, file, fullpath) => {
-      if (is.class(exports)) {
-        const obj = new exports(this);
-        assert(obj.type === 'controller', `Class file: ${fullpath} should extends from Application.Controller`);
-        return objectProxy(obj, 'base');
-      } else if (is.function(exports)) {
-        const object = new ControllerClassBasic(this);
-        exports(object);
-        return objectProxy(object, 'base');
-      }
-    });
-    this.controller = loader.load();
+    this.loadModules(
+      this.options.controller, 
+      'Controller',
+      ControllerClassBasic,
+      this
+    );
   }
 
   async startWithService() {
@@ -146,15 +128,15 @@ module.exports = class Application extends NodebaseApplication {
     } else {
       options.push(callback);
     }
+    this.server = netWork.createServer(...options);
+    if (this.options.socket) {
+      this.io = new SocketIO(this.server);
+      this.io.base = this;
+      this.io.loader();
+      this.io.nspInstaller();
+    }
+    this.emit('app:serverStarted');
     await new Promise((resolve, reject) => {
-      this.server = netWork.createServer(...options);
-      if (this.options.socket) {
-        this.io = io(this.server);
-        this.emit('app:socket:created', this.io);
-        this.io.on('connect', socket => {
-          this.emit('app:socket:connected', socket);
-        });
-      }
       this.server.listen(port, err => {
         if (err) return reject(err);
         const httpname = this.options.https ? 'https' : 'http';

@@ -9,27 +9,12 @@ const IPCMessage = require('ipc-message');
 const childprocess = require('child_process');
 const debug = require('debug')('nodebase:cluster:master');
 const parseOptions = require('../utils/options');
-const { costTime, loadFile, checkPortCanUse } = require('../utils');
 const Logger = require('../utils/logger');
+const { costTime, loadFile, checkPortCanUse, agentLifeCycle } = require('../utils');
 
 const toString = Object.prototype.toString;
 const agentWorkerFile = path.resolve(__dirname, './agent_worker.js');
 const appWorkerFile = path.resolve(__dirname, './app_worker.js');
-
-const agentLifeCycle = [
-  'agent:beforeCreate',
-  'agent:created',
-  'agent:beforeMount',
-  'agent:mounted',
-  'agent:beforeDestroy',
-  'agent:destroyed',
-  'app:beforeCreate',
-  'app:created',
-  'app:beforeMount',
-  'app:mounted',
-  'app:beforeDestroy',
-  'app:destroyed'
-];
 
 module.exports = class Master extends IPCMessage {
   constructor(config) {
@@ -63,8 +48,10 @@ module.exports = class Master extends IPCMessage {
 
   async installize() {
     await checkPortCanUse(this.console, this.options.port);
-    const port = await checkPortCanUse(this.console);
-    this.options.clusterPort = port;
+    if (this.options.socket) {
+      const port = await checkPortCanUse(this.console);
+      this.options.clusterPort = port;
+    }
     this.startSocketService();
     this.forkAgentWorker();
   }

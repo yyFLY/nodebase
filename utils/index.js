@@ -10,6 +10,21 @@ exports.camelize = camelize;
 exports.objectProxy = objectProxy;
 exports.checkPortCanUse = checkPortCanUse;
 
+exports.agentLifeCycle = [
+  'agent:beforeCreate',
+  'agent:created',
+  'agent:beforeMount',
+  'agent:mounted',
+  'agent:beforeDestroy',
+  'agent:destroyed',
+  'app:beforeCreate',
+  'app:created',
+  'app:beforeMount',
+  'app:mounted',
+  'app:beforeDestroy',
+  'app:destroyed'
+];
+
 function checkPortCanUse(logger, port) {
   return new Promise((resolve, reject) => {
     const args = [];

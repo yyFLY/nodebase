@@ -10,7 +10,7 @@
 <body>
   <div id="app" style="font-family:Arial, Helvetica, sans-serif; font-size:20px; padding:50px; color:blueviolet; text-align:center;">connecting...</div>
   <script>
-    const socket = io();
+    const socket = io('/chat/bus');
     socket.on('b', data => {
       document.getElementById('app').innerHTML = `Receive data:[${data}] from socket:${socket.id}.`;
     });
