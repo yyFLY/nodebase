@@ -20,7 +20,10 @@ module.exports = class Socket extends io {
       if (fs.statSync(fullpath).isFile() && /.js$/.test(file)) {
         const mark = file.replace(/.js$/i, '').replace(/\:/g, '\/');
         const exports = app.utils.loadFile(fullpath);
-        this.rooms[mark] = exports;
+        this.rooms[mark] = {
+          exports,
+          sockets: []
+        };
       }
     });
     debug('rooms', this.rooms);
@@ -29,8 +32,14 @@ module.exports = class Socket extends io {
   nspInstaller() {
     for (const nsp in this.rooms) {
       const room = nsp === 'index' ? this : this.of('/' + nsp);
-      const cb = this.rooms[nsp];
-      room.on('connection', socket => cb(socket, this.base));
+      const cb = this.rooms[nsp].exports;
+      const sockets = this.rooms[nsp].sockets;
+      room.on('connect', socket => sockets.push(socket));
+      room.on('connection', socket => cb(socket, this.base, sockets));
+      room.on('disconnect', socket => {
+        const index = sockets.indexOf(socket);
+        if (index > -1) sockets.splice(index, 1);
+      });
     }
   }
 }
