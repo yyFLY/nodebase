@@ -7,6 +7,7 @@ module.exports = class Socket extends io {
     super(...args);
     this.base = null;
     this.rooms = {};
+    this.alive = 0;
   }
 
   loader() {
@@ -34,12 +35,9 @@ module.exports = class Socket extends io {
       const room = nsp === 'index' ? this : this.of('/' + nsp);
       const cb = this.rooms[nsp].exports;
       const sockets = this.rooms[nsp].sockets;
-      room.on('connect', socket => sockets.push(socket));
+      room.on('connect', () => ++this.alive);
       room.on('connection', socket => cb(socket, this.base, sockets));
-      room.on('disconnect', socket => {
-        const index = sockets.indexOf(socket);
-        if (index > -1) sockets.splice(index, 1);
-      });
+      room.on('disconnect', socket => --this.alive);
     }
   }
 }
