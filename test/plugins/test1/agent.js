@@ -3,7 +3,8 @@ module.exports = component => {
   [
     'destroy',
     'task:start',
-    'task:end'
+    'task:end',
+    'cluster:mounted'
   ].forEach(life => {
     component.on(life, () => {
       debug(`lifecycle \`${life}\` is triggered.`);

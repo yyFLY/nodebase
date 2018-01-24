@@ -7,6 +7,7 @@ module.exports = agent => {
     'mounted',
     'beforeDestroy',
     'destroyed',
+    'cluster:mounted'
   ].forEach(life => {
     agent.on(life, () => {
       debug(`lifecycle \`${life}\` is triggered.`);

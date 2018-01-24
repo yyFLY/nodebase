@@ -9,12 +9,13 @@ module.exports = class Agent extends NodebaseApplication {
     this.debug = require('debug')(`nodebase:agent:${options.name}`);
     this.__agentkeepAliveTimer__ = setInterval(() => {}, 24 * 60 * 60 * 1000);
     this.on('agent:exit:child:notify', this.close.bind(this));
+    this.on('cluster:mounted', async () => await this.plugin.cluterMounted());
     this.on('agent:exit:child:destroy', () => {
       if (this.status === 1) {
         clearInterval(this.__agentkeepAliveTimer__);
         this.status = 2;
       }
-    })
+    });
   }
 
   async init() {

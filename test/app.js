@@ -8,7 +8,8 @@ module.exports = app => {
     'mounted',
     'beforeDestroy',
     'destroyed',
-    'app:beforeServerStart'
+    'app:beforeServerStart',
+    'cluster:mounted'
   ].forEach(life => {
     app.on(life, () => {
       debug(`lifecycle \`${life}\` is triggered.`);

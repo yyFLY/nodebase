@@ -37,6 +37,7 @@ module.exports = class Master extends IPCMessage {
     this.status = 0;
     this.seed = (Math.random() * 0xffffffff) | 0;
     this.env = process.env.NODE_ENV || 'production';
+    this.appForkCount = 0;
 
     const optionsPath = path.resolve(config, `options.${this.env}.js`);
     assert(fs.existsSync(optionsPath), `options.${this.env}.js should exist.`);
@@ -99,6 +100,7 @@ module.exports = class Master extends IPCMessage {
     this.on('app:exit:child:done', this.appWorkerExitDone.bind(this));
     this.on('agent:exit', () => this.status = 3);
     this.on('error', err => this.console.error(err));
+    this.on('app:mounted', this.onApplicationMounted.bind(this));
   }
 
   // 绑定系统退出的事件处理机制
@@ -110,6 +112,13 @@ module.exports = class Master extends IPCMessage {
     ['error', 'rejectionHandled', 'uncaughtException'].forEach(err => {
       process.on(err, e => this.emit('error', e));
     });
+  }
+
+  onApplicationMounted() {
+    --this.appForkCount;
+    if (this.appForkCount === 0) {
+      this.send(['agents', 'workers'], 'cluster:mounted');
+    }
   }
 
   /**
@@ -157,6 +166,7 @@ module.exports = class Master extends IPCMessage {
       refork: false,
       env: process.env
     });
+    cluster.on('fork', () => ++this.appForkCount);
     cluster.on('exit', worker => {
       if (this.status === 0) {
         this.console.warn('Application worker refork.');

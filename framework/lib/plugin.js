@@ -65,4 +65,10 @@ module.exports = class NodebasePluginFramework extends Emitter {
     const target = this.channels[service];
     await target.cross(msg);
   }
+
+  async cluterMounted() {
+    for (let i = 0; i < this.stacks.length; i++) {
+      await this.stacks[i].emit('cluster:mounted');
+    }
+  }
 }
