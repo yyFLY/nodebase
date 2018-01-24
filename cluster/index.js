@@ -101,6 +101,7 @@ module.exports = class Master extends IPCMessage {
     this.on('agent:exit', () => this.status = 3);
     this.on('error', err => this.console.error(err));
     this.on('app:mounted', this.onApplicationMounted.bind(this));
+    this.on('teardown', () => process.kill(this.pid, 'SIGINT'));
   }
 
   // 绑定系统退出的事件处理机制
