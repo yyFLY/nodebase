@@ -27,6 +27,7 @@ function resolvePlugin(configs, env, agent, file) {
     const pluginPathName = config.path;
 
     if (!pluginPackageName && !pluginPathName) {
+      console.warn('miss file:', pluginPackageName, pluginPathName);
       // throw new Error('miss package');
       continue;
     }
@@ -36,7 +37,7 @@ function resolvePlugin(configs, env, agent, file) {
     if (pluginPathName) {
       pkgPath = path.resolve(pluginPathName, 'package.json');
       if (!fs.existsSync(pkgPath)) {
-        // throw new Error('miss package');
+        console.warn('miss path package.json:', pkgPath);
         continue;
       }
       modal = loadFile(pkgPath);
@@ -47,8 +48,14 @@ function resolvePlugin(configs, env, agent, file) {
       exportsPath = path.resolve(dir, file);
     }
 
-    if (!modal.nodebasePlugin || modal.nodebasePlugin.name !== plugin) {
+    if (!modal.nodebasePlugin) {
+      console.warn('miss `nodebasePlugin` namespace:', plugin);
+      continue;
+    }
+
+    if (modal.nodebasePlugin.name !== plugin) {
       // throw new Error('error plugin');
+      console.warn('diff `nodebasePlugin.name` catch error:', modal.nodebasePlugin.name, plugin);
       continue;
     }
 
